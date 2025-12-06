@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+data.db
+/.venv
+.venv/
+.idea/
+.vscode/
+.DS_Store
+dist/
+build/
+*.egg-info
+.evidence/*.mp4
+.evidence/*.mov
