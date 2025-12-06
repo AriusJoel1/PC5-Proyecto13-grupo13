@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, "**" ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ejecutar lint
+        run: flake8
+
+      - name: Debug installed packages
+        run: pip list
+
+      - name: Run tests
+        run: |
+          PYTHONPATH=. pytest
+        continue-on-error: false
+
+      - name: Generate CI report
+        run: |
+          echo "CI run for $GITHUB_REPOSITORY" > ci-report.txt
+          echo "Commit: $GITHUB_SHA" >> ci-report.txt
+          echo "Workflow: $GITHUB_WORKFLOW" >> ci-report.txt
+          pytest --maxfail=1 >> ci-report.txt 2>&1 || echo "pytest failed" >> ci-report.txt
+          ls -la >> ci-report.txt || true
+
+      - name: Upload ci-report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-report
+          path: ci-report.txt
