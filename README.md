@@ -1,28 +1,126 @@
-# Tenant Config Service — Sprint 1
+# Proyecto 13 — Servicio Multi-Tenant con FastAPI + SQLAlchemy + Docker + Métricas
 
-Pequeña API en FastAPI que almacena configuraciones por tenant (multi-tenant demo).
+Este proyecto implementa un **servicio multi-tenant** para administrar configuraciones por tenant.  
+Cada tenant accede únicamente a su propia configuración usando el header `X-Tenant-Id`.
 
-## Requisitos
-- Python 3.11
-- pip
+El proyecto incluye:
 
-## Instalación local
-1. Crear virtualenv:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
-## Instrucciones para ejecutar en Docker
-### Construccion de Imagen
-
-`docker build -t app-pc5:v7 .`
-
-### Iniciar contenedor 
-`docker run -p 8000:8000 --name mi-app-v7 app-pc5:v7`
-
-### Entrar al contenedor y ejecutar tests
-`docker exec -it mi-app-v7 /bin/bash`
 
 ### Correr tests
 `pytest`
+- API REST con **FastAPI 0.99**
+- Base de datos **SQLite** (dev) y **Postgres** (docker-compose)
+- Multi-tenant auth por header
+- Métricas **Prometheus** por tenant
+- Dockerfile multi-stage endurecido
+- Docker Compose (API + DB)
+- Scripts de carga / seeds
+- CI/CD con workflow para **SBOM + Security Scan**
+- Tests automatizados con Pytest
+
+---
+
+#  Estructura de Carpetas
+PC5-prueba/
+│
+├── app/
+│ ├── core/config.py
+│ ├── db/
+│ │ ├── base.py
+│ │ ├── models.py
+│ │ └── session.py
+│ ├── routers/
+│ │ └── tenants.py
+│ ├── schemas/
+│ │ └── tenant.py
+│ ├── metrics.py
+│ └── main.py
+│
+├── scripts/
+│ ├── init_db.py
+│ └── load_by_tenant.py
+│
+├── tests/
+│ └── test_app.py
+│
+├── data/ (generado en runtime)
+│
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── .env
+└── README.md
+
+
+---
+
+## Funcionalidad Principal
+
+### Multi-Tenant
+Cada petición debe incluir:
+
+
+Si el tenant no coincide con la URL (`/tenants/tenant-a/...`), responde **403 Forbidden**.
+
+---
+
+### Endpoints principales
+
+| Método | Ruta | Descripción |
+|-------|-------|-------------|
+| `GET` | `/health` | Estado del servicio |
+| `GET` | `/tenants` | Lista de tenants disponibles |
+| `GET` | `/tenants/{tenant_id}/config` | Obtiene configuración del tenant |
+| `PUT` | `/tenants/{tenant_id}/config` | Actualiza configuración del tenant |
+| `GET` | `/metrics` | Métricas Prometheus |
+
+---
+
+## Métricas Prometheus (Sprint 2)
+
+Incluye contadores por tenant:
+
+Estas métricas permiten medir:
+
+- Cantidad de tráfico por tenant  
+- Intentos inválidos o maliciosos  
+- Operaciones GET/PUT por recurso  
+
+---
+
+#  Tests (Pytest)
+
+Ejecutar:
+
+```powershell
+pytest -q
+```
+
+- Health check
+- GET/PUT válido por tenant
+- Acceso cruzado rechazado
+- Validación de headers
+- Persistencia en Base de Datos
+
+### Base de Datos
+Modo desarrollo (local):
+SQLite usando archivo:
+sqlite:///./data/data.db
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python scripts/init_db.py
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python scripts/load_by_tenant.py --tenant tenant-a --n 30 --delay 0.1
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/metrics"
+docker build -t tenant-config-service .
+docker run -p 8000:8000 tenant-config-service
+docker compose up --build
+$env:DATABASE_URL="postgresql://dev:dev@db:5432/tenant_config_db"
+docker compose up --build
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/tenants/tenant-a/config" -Headers @{ "X-Tenant-Id" = "tenant-a" }
+$body = @{ config = @{ msg="hola docker" } } | ConvertTo-Json
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/tenants/tenant-a/config" -Method PUT -ContentType "application/json" -Headers @{ "X-Tenant-Id" = "tenant-a" } -Body $body
+```

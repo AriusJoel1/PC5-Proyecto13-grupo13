@@ -6,3 +6,5 @@ pydantic==1.10.14
 pytest
 httpx==0.27.2
 flake8
+prometheus-client==0.16.0
+psycopg2-binary==2.9.9  
