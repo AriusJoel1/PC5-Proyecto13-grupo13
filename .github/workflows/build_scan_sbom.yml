@@ -1,0 +1,38 @@
+name: Build + SBOM + Scan
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_and_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build image
+        run: |
+          docker build -t tenant-config-service:ci .
+
+      - name: Generate SBOM (syft)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock anchore/syft:latest docker:tenant-config-service:ci -o json > sbom.json
+
+      - name: Scan image (trivy)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --format json -o trivy-report.json tenant-config-service:ci || true
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-and-scan
+          path: |
+            sbom.json
+            trivy-report.json

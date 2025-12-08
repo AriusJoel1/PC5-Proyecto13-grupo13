@@ -22,7 +22,7 @@ app.add_middleware(
 @app.middleware("http")
 async def add_request_metrics(request: Request, call_next):
     # incrementa un contador global de solicitudes
-    # y evita operaciones costosas 
+    # y evita operaciones costosas
     response = await call_next(request)
     return response
 
