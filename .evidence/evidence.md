@@ -1,21 +1,13 @@
 # VIDEOS
 
 ## Sprint 1
-<video width="640" controls>
-  <source src="print1.mp4" type="video/mp4">
-</video>
+- [Ver video Sprint 1](./sprint1.mp4)
 
 ## Sprint 2
-<video width="640" controls>
-  <source src="print2.mp4" type="video/mp4">
-</video>
+- [Ver video Sprint 2](./sprint2.mp4)
 
 ## Sprint 3
-<video width="640" controls>
-  <source src="print3.mp4" type="video/mp4">
-</video>
+- [Ver video Sprint 3](./sprint3.mp4)
 
 ## Video Final
-<video width="640" controls>
-  <source src="videofinal.mp4" type="video/mp4">
-</video>
+- [Ver video final](./videofinal.mp4)
