@@ -1,0 +1,13 @@
+# Rol que otorga acceso de lectura a configmaps y secretos en el namespace del inquilino (tenant)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tenant-reader
+  namespace: tenant-a # Cambiar a tenant-b para usar en tenant-b
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]

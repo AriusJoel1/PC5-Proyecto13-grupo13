@@ -124,3 +124,38 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8000/tenants/tenant-a/config" -Headers 
 $body = @{ config = @{ msg="hola docker" } } | ConvertTo-Json
 Invoke-RestMethod -Uri "http://127.0.0.1:8000/tenants/tenant-a/config" -Method PUT -ContentType "application/json" -Headers @{ "X-Tenant-Id" = "tenant-a" } -Body $body
 ```
+
+# Sprint 3
+
+# 1. iniciar minikube con driver docker
+minikube start --driver=docker
+
+# 2. Aplicar namespaces
+kubectl apply -f manifests/namespaces.yaml
+
+# 3. Crear ServiceAccounts
+kubectl apply -f manifests/platform-serviceaccounts.yaml
+# Creamos el manifiesto para los secretos
+kubectl apply -f manifests/db-secret.yaml
+
+# 4. Crear Roles y RoleBindings para tenant-a
+kubectl apply -f manifests/role-tenant.yaml
+kubectl apply -f manifests/rolebinding-tenant.yaml
+
+# Aplicar roles para tenant-b
+kubectl apply -f manifests/role-tenant.yaml -n tenant-b
+kubectl apply -f manifests/rolebinding-tenant.yaml -n tenant-b
+
+# 5. Desplegar la API en el namespace 'platform'
+kubectl apply -f manifests/deployment-service.yaml
+
+# 6. Verificar recursos
+kubectl get ns
+kubectl get deployments -n platform
+kubectl get pods -n platform
+kubectl get roles --all-namespaces
+kubectl get rolebindings --all-namespaces
+
+# 7. Pruebas RBAC (simular llamadas)
+kubectl auth can-i get configmaps --as system:serviceaccount:tenant-a:tenant-a-sa -n tenant-a
+kubectl auth can-i get configmaps --as system:serviceaccount:tenant-a:tenant-a-sa -n tenant-b
