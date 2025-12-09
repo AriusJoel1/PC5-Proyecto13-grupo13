@@ -1,10 +1,21 @@
 # VIDEOS
 
-Videos por sprint:
+## Sprint 1
+<video width="640" controls>
+  <source src="print1.mp4" type="video/mp4">
+</video>
 
-SPRITN1: [video Sprint 1](print1.mp4)
-SPRITN2: [video Sprint 2](print2.mp4)
-SPRITN3: [video Sprint 3](print3.mp4)
+## Sprint 2
+<video width="640" controls>
+  <source src="print2.mp4" type="video/mp4">
+</video>
 
-Video final: [video final](videofinal.mp4)
+## Sprint 3
+<video width="640" controls>
+  <source src="print3.mp4" type="video/mp4">
+</video>
 
+## Video Final
+<video width="640" controls>
+  <source src="videofinal.mp4" type="video/mp4">
+</video>
